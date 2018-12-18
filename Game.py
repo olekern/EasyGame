@@ -1,17 +1,21 @@
 import pygame
 import json
+import random
 from pygame.locals import *
 
 
 TILE_SIZE = 32
-GRAVITY = 100
-WALK_SPEED = 300
-JUMP_FORCE = -20
+GRAVITY = 80
+WALK_SPEED = 0.7
+JUMP_FORCE = -15
+DAMPING_STOP = 0.8
+DAMPING_TURNING = 0.6
+DAMPING_RUNNING = 0.4
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-SCREEN_WIDTH = 1080
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -22,21 +26,33 @@ clock = pygame.time.Clock()
 pygame.font.init()
 font = pygame.font.SysFont('Arial', 40)
 
+
 class SpriteSheet:
-    def __init__(self, filename):
+    def __init__(self, filename, spriteWidth, spriteHeight):
         self.spriteSheet = pygame.image.load(filename).convert_alpha()
+        self.spriteWidth = spriteWidth
+        self.spriteHeight = spriteHeight
 
     def getImageAt(self, x, y):
-        rect = pygame.Rect((x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE))
+        rect = pygame.Rect((x*self.spriteWidth, y*self.spriteHeight, self.spriteWidth, self.spriteHeight))
         image = pygame.Surface(rect.size, pygame.SRCALPHA)
         image.blit(self.spriteSheet, (0, 0), rect)
         return image
+    
+    def getImages(self, row):
+        images = []
+        for i in range(int(self.spriteSheet.get_rect().width/self.spriteWidth)):
+            rect = pygame.Rect((i*self.spriteWidth, row*self.spriteHeight, self.spriteWidth, self.spriteHeight))
+            image = pygame.Surface(rect.size, pygame.SRCALPHA)
+            image.blit(self.spriteSheet, (0, 0), rect)
+            images.append(image)
+        return images
 
 class Camera(object):
     def __init__(self, player):
         self.player = player
-        self.x = player.x
-        self.y = player.y
+        self.x = 0
+        self.y = 0
     
     def update(self):
         self.x = self.player.x - SCREEN_WIDTH / 2
@@ -81,43 +97,79 @@ class Tile:
     
 class Player:
     def __init__(self, x, y):
-        self.sprite_right = pygame.image.load("res/player.png").convert_alpha()
-        self.sprite_left = pygame.transform.flip(self.sprite_right, True, False)
+        self.startX = x
+        self.startY = y
         self.x = x
         self.y = y
-        self.w = 23
+        self.w = 24
         self.h = 40
+
+        self.spriteSheet = SpriteSheet("res/player.png", self.w, self.h)
+        self.idle_sprites_right = self.spriteSheet.getImages(0)
+        self.idle_sprites_left = []
+        for sprite in self.idle_sprites_right:
+            self.idle_sprites_left.append(pygame.transform.flip(sprite, True, False))
+        
+        self.running_sprites_right = self.spriteSheet.getImages(1)
+        self.running_sprites_left = []
+        for sprite in self.running_sprites_right:
+            self.running_sprites_left.append(pygame.transform.flip(sprite, True, False))
+
+        self.air_sprites_right = self.spriteSheet.getImages(2)
+        self.air_sprites_left = []
+        for sprite in self.air_sprites_right:
+            self.air_sprites_left.append(pygame.transform.flip(sprite, True, False))
+
+
         self.vx = 0
         self.vy = 0
         self.grounded = False
         self.facingRight = True
+        self.spriteDT = 0.1
+        self.spriteTime = 0.0
+        self.spriteIndex = 0
+        self.timeInAir = 0.0
 
-    def update(self, dt):
-        self.vx = 0
+    def update(self, dt, events):
+        self.prevY = self.y
+        self.spriteTime += dt
+        if self.spriteTime > self.spriteDT:
+            self.spriteTime -= self.spriteDT
+            self.spriteIndex += 1
+            if self.spriteIndex >= len(self.idle_sprites_right):
+                self.spriteIndex = 0
 
         keys = pygame.key.get_pressed()
         dx = 0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            dx -= WALK_SPEED
+            dx -= 1
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            dx += WALK_SPEED
-        self.vx = dx * dt
+            dx += 1
         
-        """dy = 0
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            dy -= WALK_SPEED
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            dy += WALK_SPEED
-        self.vy = dy * dt"""
-
-        if not self.grounded:
-            self.vy += GRAVITY * dt
+        self.vx += dx * WALK_SPEED
+        if dx == 0:
+            self.vx *= (1-DAMPING_STOP)**(dt*10)
+        elif self.vx/dx < 0:
+            self.vx *= (1-DAMPING_TURNING)**(dt*10)
         else:
-            self.vy = 0
+            self.vx *= (1-DAMPING_RUNNING)**(dt*10)
 
-        if keys[pygame.K_SPACE] and self.grounded:
+        if abs(self.vx) < 0.1:
+            self.vx = 0
+
+        self.vy += GRAVITY * dt
+        if not self.grounded:
+            self.timeInAir += dt
+        
+
+        if keys[pygame.K_SPACE] and self.timeInAir < 0.03:
             self.vy = JUMP_FORCE
         
+        for event in events:
+            if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+                if self.vy < 0:
+                    self.vy /= 2
+
     
     def lateUpdate(self):
         self.x += self.vx
@@ -130,35 +182,100 @@ class Player:
 
         if self.x < 0:
             self.x = 0
+        if self.x > len(tiles[0])*TILE_SIZE - player.w:
+            self.x = len(tiles[0])*TILE_SIZE - player.w
+        
+        if self.y>len(tiles)*TILE_SIZE:
+            self.x = self.startX
+            self.y = self.startY
+            self.vx = 0
+            self.vy = 0
 
     def checkCollisions(self, tiles):
         self.grounded = False
         if self.vy > 0:
             yCheck = self.y + self.h + self.vy
             xCheck1 = self.x
-            xCheck2 = self.x + self.w
+            xCheck2 = self.x + self.w - 1
             tile1 = getTile(int(xCheck1 / TILE_SIZE), int(yCheck / TILE_SIZE), tiles)
             tile2 = getTile(int(xCheck2 / TILE_SIZE), int(yCheck / TILE_SIZE), tiles)
-            if tile1 is not 0 or tile2 is not 0:
+            if (tile1 is not 0 and tile1 is not None) or (tile2 is not 0 and tile2 is not None):
+                self.timeInAir = 0
                 self.grounded = True
                 self.vy = 0
                 self.y = int(yCheck / TILE_SIZE)*TILE_SIZE - self.h
+        elif self.vy < 0:
+            yCheck = self.y + self.vy
+            xCheck1 = self.x
+            xCheck2 = self.x + self.w - 1
+            tile1 = getTile(int(xCheck1 / TILE_SIZE), int(yCheck / TILE_SIZE), tiles)
+            tile2 = getTile(int(xCheck2 / TILE_SIZE), int(yCheck / TILE_SIZE), tiles)
+            if (tile1 is not 0 and tile1 is not None) or (tile2 is not 0 and tile2 is not None):
+                self.vy = 0
+                self.y = int(yCheck / TILE_SIZE + 1)*TILE_SIZE
+        
+        if self.vx > 0:
+            xCheck = self.x + self.w + self.vx
+            yCheck1 = self.y
+            yCheck2 = self.y + self.h - 1
+            tile1 = getTile(int(xCheck / TILE_SIZE), int(yCheck1 / TILE_SIZE), tiles)
+            tile2 = getTile(int(xCheck / TILE_SIZE), int(yCheck2 / TILE_SIZE), tiles)
+            if (tile1 is not 0 and tile1 is not None) or (tile2 is not 0 and tile2 is not None):
+                self.vx = 0
+                self.x = int(xCheck / TILE_SIZE)*TILE_SIZE - self.w
+        elif self.vx < 0:
+            xCheck = self.x + self.vx
+            yCheck1 = self.y
+            yCheck2 = self.y + self.h - 1
+            tile1 = getTile(int(xCheck / TILE_SIZE), int(yCheck1 / TILE_SIZE), tiles)
+            tile2 = getTile(int(xCheck / TILE_SIZE), int(yCheck2 / TILE_SIZE), tiles)
+            if (tile1 is not 0 and tile1 is not None) or (tile2 is not 0 and tile2 is not None):
+                self.vx = 0
+                self.x = int(xCheck / TILE_SIZE + 1)*TILE_SIZE
+        
+
  
     def draw(self, screen):
-        if self.facingRight:
-            screen.blit(self.sprite_right, (self.x - camera.x, self.y - camera.y))
-        else:
-            screen.blit(self.sprite_left, (self.x - camera.x, self.y - camera.y))
+        if self.prevY != self.y:
+            index = 1
+            if self.timeInAir < 0.1:
+                index = 0
+            elif self.vy > 0:
+                index = 2                
             
-
-class Target:
-    def __init__(self, x, y):
+            if self.facingRight:
+                sprite = self.air_sprites_right[index]
+            else:
+                sprite = self.air_sprites_left[index]
+        elif self.vx > 0:
+            sprite = self.running_sprites_right[self.spriteIndex]
+        elif self.vx < 0:
+            sprite = self.running_sprites_left[self.spriteIndex]
+        elif self.facingRight:
+            sprite = self.idle_sprites_right[self.spriteIndex]
+        else:
+            sprite = self.idle_sprites_left[self.spriteIndex]
+            
+        screen.blit(sprite, (self.x - camera.x, self.y - camera.y))
+            
+class Cloud:
+    def __init__(self, x, y, sprite, speed):
         self.x = x
         self.y = y
-    
-    def draw(self, screen):
-        pygame.draw.rect(screen, GREEN, (self.x*TILE_SIZE - camera.x, self.y*TILE_SIZE - camera.y, TILE_SIZE, TILE_SIZE))
+        self.sprite = sprite
+        self.speed = speed
 
+    def update(self, dt):
+        self.x -= self.speed*dt
+        if self.x < -self.sprite.get_rect().width:
+            self.x = SCREEN_WIDTH + random.randint(0, 100)
+            self.y = random.randint(0, SCREEN_HEIGHT/3)
+            self.speed = random.randint(10, 50)
+
+    def draw(self, screen):
+        screen.blit(self.sprite, (self.x - camera.x/50, self.y - camera.y/50))
+
+    
 def getTile(x, y, group):
     if y < 0 or x < 0:
         return
@@ -173,7 +290,7 @@ def getTileWithId(id, group):
     return
 
 
-spriteSheet = SpriteSheet("res/sprites.png")
+spriteSheet = SpriteSheet("res/sprites.png", TILE_SIZE, TILE_SIZE)
 
 TILE_GRASS_TOP = Tile(2, spriteSheet.getImageAt(1, 0))
 TILE_GRASS_TOP_LEFT = Tile(1, spriteSheet.getImageAt(0, 0))
@@ -202,14 +319,24 @@ DECORATION_GOAL_25 = Tile(25, spriteSheet.getImageAt(0, 3))
 ALL_DECORATIONS = [DECORATION_GRASS, DECORATION_SIGN_5, DECORATION_SIGN_6, DECORATION_SIGN_7, DECORATION_SIGN_8, DECORATION_SIGN_13, DECORATION_SIGN_14, DECORATION_SIGN_15, DECORATION_SIGN_16, DECORATION_SIGN_21, DECORATION_SIGN_22, DECORATION_GOAL_17, DECORATION_GOAL_25]
 
 player = Player(TILE_SIZE*2, 0)
-target = Target(0, 0)
 camera = Camera(player)
+
+sun = pygame.image.load("res/sun.png").convert_alpha()
 
 running = True
 
 map1 = MapLoader("maps/Map1.json")
 tiles = map1.getTiles("Ground")
 decorations = map1.getTiles("Decoration")
+
+cloudImg = pygame.image.load("res/cloud.png").convert_alpha()
+clouds = []
+
+for i in range(5):
+    x = random.randint(0, SCREEN_WIDTH)
+    y = random.randint(0, SCREEN_HEIGHT/3)
+    speed = random.randint(10, 50)
+    clouds.append(Cloud(x, y, cloudImg, speed))
 
 while running:
     dt = clock.tick(60) / 1000
@@ -221,14 +348,18 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-    player.update(dt)
+    player.update(dt, events)
     player.checkCollisions(tiles)
     player.lateUpdate()
 
     camera.update()
 
     screen.fill((95, 187, 210))
+    screen.blit(sun, (SCREEN_WIDTH-600, 0))
 
+    for cloud in clouds:
+        cloud.update(dt)
+        cloud.draw(screen)
     
     minY = int((camera.y) / TILE_SIZE)
     maxY = int((camera.y + SCREEN_HEIGHT) / TILE_SIZE) + 1
@@ -247,11 +378,9 @@ while running:
                 if decor is not None:
                     decor.draw(screen, x, y)
 
-
-
+    
 
     player.draw(screen)
-    target.draw(screen)
 
     time = pygame.time.get_ticks() / 1000
     text = font.render('Tid: ' + str(time), True, (255, 255, 255))
@@ -260,17 +389,22 @@ while running:
     text = font.render('DT: '+ str(dt), True, (255, 255, 255))
     screen.blit(text, (10, 50))
 
+    """
     text = font.render('playerX: '+ str(player.x) + '  (' + str(player.x//TILE_SIZE) + ')', True, (255, 255, 255))
     screen.blit(text, (10, 90))
 
     text = font.render('playerY: '+ str(player.y) + '  (' + str(player.y//TILE_SIZE) + ')', True, (255, 255, 255))
     screen.blit(text, (10, 130))
 
-    text = font.render('cameraX: '+ str(camera.x), True, (255, 255, 255))
+    text = font.render('vx: '+ str(player.vx), True, (255, 255, 255))
     screen.blit(text, (10, 170))
 
-    text = font.render('cameraY: '+ str(camera.y), True, (255, 255, 255))
+    text = font.render('vy: '+ str(player.vy), True, (255, 255, 255))
     screen.blit(text, (10, 210))
+
+    text = font.render('grounded: '+ str(player.grounded), True, (255, 255, 255))
+    screen.blit(text, (10, 250))
+    """
 
     pygame.display.flip()
 
