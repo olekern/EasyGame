@@ -14,8 +14,8 @@ DAMPING_RUNNING = 0.4
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 500
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -334,7 +334,7 @@ clouds = []
 
 for i in range(5):
     x = random.randint(0, SCREEN_WIDTH)
-    y = random.randint(0, SCREEN_HEIGHT/3)
+    y = random.randint(0, int(SCREEN_HEIGHT/3))
     speed = random.randint(10, 50)
     clouds.append(Cloud(x, y, cloudImg, speed))
 
