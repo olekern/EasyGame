@@ -424,7 +424,7 @@ class Level:
             content = outfile.readlines()
             print(content)
             content[level-1] = str(level) + " " + str(rec)
-            if(level < n):
+            if(level < numLevels):
                 content[level-1] += "\n"
             
             with open('records.txt', 'w') as file:
