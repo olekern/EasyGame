@@ -1,6 +1,8 @@
 import pygame
 import json
 import random
+import Menu
+from Menu import Menu
 from pygame.locals import *
 from pathlib import Path
 import os.path
@@ -331,6 +333,11 @@ class Game:
         self.level = Level(self, "maps/Map1.json")
 
 
+        self.menu = Menu(self)
+
+    def loadLevel(self, levelPath):
+        self.level = Level(self, levelPath)
+        self.isPlaying = True
 
     def run(self):
         running = True
@@ -347,8 +354,8 @@ class Game:
             if self.isPlaying:
                 self.level.update(self.screen, events, dt)
             else:
-                x = 0
-            
+                self.menu.update(self.screen, events)
+
             pygame.display.flip()
 
 
