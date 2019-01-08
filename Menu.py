@@ -9,7 +9,7 @@ class Menu:
 
         for i in range(game.LEVEL_COUNT):
             j = i + 1
-            button = Button(self, i*200 + 150, game.SCREEN_HEIGHT/2)
+            button = Button(self, game, (game.SCREEN_WIDTH/6)*(i+1), game.SCREEN_HEIGHT/2)
             self.buttons.append(button)
 
     def update(self, screen, events):
@@ -36,15 +36,16 @@ class Menu:
     
 
 class Button:
-    def __init__(self, menu, x, y):
+    def __init__(self, menu, game, x, y):
         self.menu = menu
+        self.game = game
         self.x = x
         self.y = y
         self.width = 150
         self.height = 65
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, 150, 65)) 
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
 
     def collide(self, mouse):
         x_pos = mouse[0]

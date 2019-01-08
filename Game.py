@@ -401,11 +401,11 @@ class Level:
                     tile = getTileWithId(tileID, self.game.ALL_TILES)
                     if tile is not None:
                         tile.draw(screen, x, y)
-                """decorID = getTile(x, y, decorations)
+                decorID = getTile(x, y, self.decorations)
                 if decorID is not None:
-                    decor = getTileWithId(decorID, ALL_DECORATIONS)
+                    decor = getTileWithId(decorID, self.game.ALL_DECORATIONS)
                     if decor is not None:
-                        decor.draw(screen, x, y)"""
+                        decor.draw(screen, x, y)
 
         
 
