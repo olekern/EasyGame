@@ -7,10 +7,10 @@ class Menu:
 
         self.buttons = []
 
-
+        levelPaths = ["maps/Map1.json", "maps/Map2.json", "maps/Map3.json", "maps/Map4.json"]
         for i in range(game.LEVEL_COUNT):
             x_pos = (game.SCREEN_WIDTH/6)*(i)+(game.SCREEN_WIDTH/12)*(i+0.5)
-            button = Button(self, game, x_pos, game.SCREEN_HEIGHT/2)
+            button = Button(self, game, x_pos, game.SCREEN_HEIGHT/2, levelPaths[i])
             self.buttons.append(button)
 
     def update(self, screen, events):
@@ -35,13 +35,14 @@ class Menu:
             self.buttons[i].draw(screen)
 
 class Button:
-    def __init__(self, menu, game, x, y):
+    def __init__(self, menu, game, x, y, levelPath):
         self.menu = menu
         self.game = game
         self.x = x
         self.y = y
         self.width = 150
         self.height = 65
+        self.levelPath = levelPath
 
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
@@ -52,6 +53,6 @@ class Button:
 
         if (x_pos >= self.x and x_pos <= self.x + self.width) and (y_pos >= self.y and y_pos <= self.y + self.height):
             #Button is clicked
-            self.menu.game.loadLevel("maps/Map1.json")
+            self.menu.game.loadLevel(self.levelPath)
 
     
