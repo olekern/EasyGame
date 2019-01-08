@@ -2,6 +2,8 @@ import pygame
 import json
 import random
 from pygame.locals import *
+from pathlib import Path
+import os.path
 
 class SpriteSheet:
     def __init__(self, filename, spriteWidth, spriteHeight):
@@ -355,6 +357,7 @@ class Game:
 
 
 class Level:
+    numLevels = 4
     def __init__(self, game, mapRef):
         self.game = game
         self.mapRef = mapRef
@@ -415,6 +418,45 @@ class Level:
 
         text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
         screen.blit(text, (10, 50))
+
+    def writeFile(level, rec):
+        
+        if(os.path.isfile("records.txt")):
+            print("Records file exists")
+            outfile = open("records.txt", "r")
+            content = outfile.readlines()
+            print(content)
+            content[level-1] = str(level) + " " + str(rec)
+            if(level < numLevels):
+                content[level-1] += "\n"
+            
+            with open('records.txt', 'w') as file:
+                file.writelines(content)
+        else:
+            print("Records file does not exist")
+            outfile = open("records.txt", "w")
+            for i in range(1, numLevels+1):
+                if(i == level):
+                    outfile.write(str(level) + " " +str(rec))
+                outfile.write("\n")
+        
+        outfile.close()
+        
+        print("Record file successfully written!")
+        outfile.close()
+        
+    #RETURNS LIST OF RECORDS FOR EACH LEVEL
+    def readFile():
+        outfile = open("records.txt","r")
+        content = outfile.readlines()
+        outfile.close()
+        i = []
+        for str in content:
+            array = str.split(" ")
+            j = array[1]
+            j = j.replace("\n", "")
+            i.append(int(j))
+        return i
 
 
 game = Game()
