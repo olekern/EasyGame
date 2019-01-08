@@ -7,6 +7,7 @@ class Menu:
 
         self.buttons = []
 
+
         for i in range(game.LEVEL_COUNT):
             x_pos = (game.SCREEN_WIDTH/6)*(i)+(game.SCREEN_WIDTH/12)*(i+0.5)
             button = Button(self, game, x_pos, game.SCREEN_HEIGHT/2)
