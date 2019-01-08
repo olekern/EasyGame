@@ -303,8 +303,11 @@ class Game:
         self.TILE_GRASS_LEFT = Tile(self, 9, spriteSheet.getImageAt(0, 1))
         self.TILE_DIRT = Tile(self, 10, spriteSheet.getImageAt(1,1))
         self.TILE_GRASS_RIGHT = Tile(self, 11, spriteSheet.getImageAt(2, 1))
+        self.TILE_GRASS_BOTTOM = Tile(self, 18, spriteSheet.getImageAt(1, 2))
+        self.TILE_GRASS_BOTTOM_LEFT = Tile(self, 17, spriteSheet.getImageAt(0, 2))
+        self.TILE_GRASS_BOTTOM_RIGHT = Tile(self, 19, spriteSheet.getImageAt(2, 2))
 
-        self.ALL_TILES = [self.TILE_GRASS_TOP, self.TILE_GRASS_TOP_LEFT, self.TILE_GRASS_TOP_RIGHT, self.TILE_GRASS_LEFT, self.TILE_DIRT, self.TILE_GRASS_RIGHT]
+        self.ALL_TILES = [self.TILE_GRASS_TOP, self.TILE_GRASS_TOP_LEFT, self.TILE_GRASS_TOP_RIGHT, self.TILE_GRASS_LEFT, self.TILE_DIRT, self.TILE_GRASS_RIGHT, self.TILE_GRASS_BOTTOM, self.TILE_GRASS_BOTTOM_LEFT, self.TILE_GRASS_BOTTOM_RIGHT]
 
         self.DECORATION_GRASS = Tile(self, 4, spriteSheet.getImageAt(3, 0))
         self.DECORATION_SIGN_5 = Tile(self, 5, spriteSheet.getImageAt(4, 0))
@@ -317,12 +320,14 @@ class Game:
         self.DECORATION_SIGN_16 = Tile(self, 16, spriteSheet.getImageAt(7, 1))
         self.DECORATION_SIGN_21 = Tile(self, 21, spriteSheet.getImageAt(4, 2))
         self.DECORATION_SIGN_22 = Tile(self, 22, spriteSheet.getImageAt(5, 2))
-        self.DECORATION_GOAL_17 = Tile(self, 17, spriteSheet.getImageAt(0, 2))
-        self.DECORATION_GOAL_25 = Tile(self, 25, spriteSheet.getImageAt(0, 3))
+        self.DECORATION_GOAL_23 = Tile(self, 23, spriteSheet.getImageAt(6, 2))
+        self.DECORATION_GOAL_31 = Tile(self, 31, spriteSheet.getImageAt(6, 3))
 
 
-        self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_17, self.DECORATION_GOAL_25]
-        self.isPlaying = False
+        self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_23, self.DECORATION_GOAL_31]
+        self.isPlaying = True
+        self.level = Level(self, "maps/Map1.json")
+
 
 
     def run(self):
@@ -342,8 +347,6 @@ class Game:
             else:
                 x = 0
             
-            #self.level = Level(self, "maps/Map1.json")
-
             pygame.display.flip()
 
 
@@ -396,11 +399,11 @@ class Level:
                     tile = getTileWithId(tileID, self.game.ALL_TILES)
                     if tile is not None:
                         tile.draw(screen, x, y)
-                """decorID = getTile(x, y, decorations)
+                decorID = getTile(x, y, self.decorations)
                 if decorID is not None:
-                    decor = getTileWithId(decorID, ALL_DECORATIONS)
+                    decor = getTileWithId(decorID, self.game.ALL_DECORATIONS)
                     if decor is not None:
-                        decor.draw(screen, x, y)"""
+                        decor.draw(screen, x, y)
 
         
 
