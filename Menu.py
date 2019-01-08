@@ -45,14 +45,13 @@ class Button:
         self.levelPath = levelPath
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
+        pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
 
     def collide(self, mouse):
         x_pos = mouse[0]
         y_pos = mouse[1]
 
         if (x_pos >= self.x and x_pos <= self.x + self.width) and (y_pos >= self.y and y_pos <= self.y + self.height):
-            #Button is clicked
             self.menu.game.loadLevel(self.levelPath)
 
     
