@@ -284,6 +284,7 @@ class Game:
 
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 600
+        self.LEVEL_COUNT = 4
 
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
