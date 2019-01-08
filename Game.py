@@ -289,6 +289,8 @@ class Game:
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 600
         self.LEVEL_COUNT = 4
+        self.records = []
+        self.loadRecords()
 
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -336,6 +338,44 @@ class Game:
     def loadLevel(self, levelPath):
         self.level = Level(self, levelPath)
         self.isPlaying = True
+    
+    def updateRecord(self, levelIndex, record):
+        self.records[levelIndex] = record
+        if(os.path.isfile("records.txt")):
+            print("Records file exists")
+            outfile = open("records.txt", "r")
+            content = []
+            for record in self.records:
+                content.append(str(record)+str("\n"))
+            
+            with open('records.txt', 'w') as file:
+                file.writelines(content)
+        else:
+            print("Records file does not exist")
+            outfile = open("records.txt", "w")
+            for i in range(self.LEVEL_COUNT):
+                if(i == levelIndex):
+                    outfile.write(str(levelIndex) + " " +str(record))
+                outfile.write("\n")
+        outfile.close()
+        
+    def loadRecords(self):
+        if os.path.isfile("records.txt"):
+            outfile = open("records.txt","r")
+            lines = outfile.readlines()
+            outfile.close()
+            records = []
+            for line in lines:
+                if line is not "":
+                    records.append(float(line))
+            for i in range(self.LEVEL_COUNT-len(records)):
+                records.append(0.0)
+            
+            self.records = records
+        else:
+            self.records = []
+            for i in range(self.LEVEL_COUNT):
+                self.records.append(0)
 
     def run(self):
         running = True
@@ -423,39 +463,7 @@ class Level:
         text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
         screen.blit(text, (10, 50))
 
-    def writeFile(self, level, rec):
-        if(os.path.isfile("records.txt")):
-            print("Records file exists")
-            outfile = open("records.txt", "r")
-            content = outfile.readlines()
-            print(content)
-            content[level-1] = str(level) + " " + str(rec)
-            if(level < self.game.LEVEL_COUNT):
-                content[level-1] += "\n"
-            
-            with open('records.txt', 'w') as file:
-                file.writelines(content)
-        else:
-            print("Records file does not exist")
-            outfile = open("records.txt", "w")
-            for i in range(1, self.game.LEVEL_COUNT+1):
-                if(i == level):
-                    outfile.write(str(level) + " " +str(rec))
-                outfile.write("\n")
-        
-        outfile.close()
-        
-    def readFile(self):
-        outfile = open("records.txt","r")
-        content = outfile.readlines()
-        outfile.close()
-        i = []
-        for str in content:
-            array = str.split(" ")
-            j = array[1]
-            j = j.replace("\n", "")
-            i.append(int(j))
-        return i
+    
 
 
 game = Game()
