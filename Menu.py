@@ -33,8 +33,6 @@ class Menu:
         for i in range(self.game.LEVEL_COUNT):
             self.buttons[i].draw(screen)
 
-    
-
 class Button:
     def __init__(self, menu, game, x, y):
         self.menu = menu
