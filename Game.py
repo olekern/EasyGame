@@ -86,7 +86,7 @@ class Player:
         self.y = y
         self.w = 24
         self.h = 40
-        self.WALK_SPEED = 100
+        self.WALK_SPEED = 10
         self.JUMP_FORCE = -15
         self.DAMPING_STOP = 0.8
         self.DAMPING_TURNING = 0.6
@@ -329,10 +329,8 @@ class Game:
 
 
         self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_23, self.DECORATION_GOAL_31]
-        self.isPlaying = True
+        self.isPlaying = False
         self.level = Level(self, "maps/Map1.json")
-
-
         self.menu = Menu(self)
 
     def loadLevel(self, levelPath):
@@ -364,7 +362,6 @@ class Game:
 
 
 class Level:
-    numLevels = 4
     def __init__(self, game, mapRef):
         self.game = game
         self.mapRef = mapRef
@@ -426,15 +423,14 @@ class Level:
         text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
         screen.blit(text, (10, 50))
 
-    def writeFile(level, rec):
-        
+    def writeFile(self, level, rec):
         if(os.path.isfile("records.txt")):
             print("Records file exists")
             outfile = open("records.txt", "r")
             content = outfile.readlines()
             print(content)
             content[level-1] = str(level) + " " + str(rec)
-            if(level < numLevels):
+            if(level < self.game.LEVEL_COUNT):
                 content[level-1] += "\n"
             
             with open('records.txt', 'w') as file:
@@ -442,18 +438,14 @@ class Level:
         else:
             print("Records file does not exist")
             outfile = open("records.txt", "w")
-            for i in range(1, numLevels+1):
+            for i in range(1, self.game.LEVEL_COUNT+1):
                 if(i == level):
                     outfile.write(str(level) + " " +str(rec))
                 outfile.write("\n")
         
         outfile.close()
         
-        print("Record file successfully written!")
-        outfile.close()
-        
-    #RETURNS LIST OF RECORDS FOR EACH LEVEL
-    def readFile():
+    def readFile(self):
         outfile = open("records.txt","r")
         content = outfile.readlines()
         outfile.close()
