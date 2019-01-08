@@ -25,9 +25,9 @@ class Button:
 
 buttons = []
 
-for i in range(9):
+for i in range(6):
     j = i + 1
-    button = Button(SCREEN_WIDTH/j - 75, SCREEN_HEIGHT/2)
+    button = Button(j*150 + 150, SCREEN_HEIGHT/2)
     buttons.append(button)
 
 while running: 
@@ -44,7 +44,7 @@ while running:
     screenColor = (95, 187, 210)
     screen.fill(screenColor)
 
-    text = font40.render('Et Jævlig Bra Spill', False, (255, 255, 255))
+    text = font40.render('Pygame', False, (255, 255, 255))
     textWidth = text.get_rect().width
     screen.blit(text, (SCREEN_WIDTH/2 - textWidth/2, SCREEN_HEIGHT/5))
 
@@ -52,7 +52,7 @@ while running:
     textWidth = text.get_rect().width
     screen.blit(text, (SCREEN_WIDTH/2 - textWidth/2, SCREEN_HEIGHT/5 + 50))
 
-    for i in range(9):
+    for i in range(6):
         buttons[i].draw(screen)
     #button2.draw(screen)
 

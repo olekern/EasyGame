@@ -269,7 +269,7 @@ class Cloud:
         self.x -= self.speed*dt
         if self.x < -self.sprite.get_rect().width:
             self.x = SCREEN_WIDTH + random.randint(0, 100)
-            self.y = random.randint(0, SCREEN_HEIGHT/3)
+            self.y = random.randint(0, int(SCREEN_HEIGHT/3))
             self.speed = random.randint(10, 50)
 
     def draw(self, screen):
