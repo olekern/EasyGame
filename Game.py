@@ -321,7 +321,7 @@ class Game:
 
 
         self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_17, self.DECORATION_GOAL_25]
-        self.level = Level(self, "maps/Map1.json")
+        self.isPlaying = False
 
 
     def run(self):
@@ -336,7 +336,12 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         running = False
 
-            self.level.update(self.screen, events, dt)
+            if self.isPlaying:
+                self.level.update(self.screen, events, dt)
+            else:
+                x = 0
+            
+            #self.level = Level(self, "maps/Map1.json")
 
             pygame.display.flip()
 
