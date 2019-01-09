@@ -23,7 +23,7 @@ class Menu:
         screenColor = (95, 187, 210)
         screen.fill(screenColor)
 
-        text = self.game.font.render('Pygame', False, (255, 255, 255))
+        text = self.game.font.render('EasyGame', False, (255, 255, 255))
         textWidth = text.get_rect().width
         screen.blit(text, (self.game.SCREEN_WIDTH/2 - textWidth/2, self.game.SCREEN_HEIGHT/5))
 
