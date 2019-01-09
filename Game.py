@@ -108,7 +108,7 @@ class Player:
         self.y = y
         self.w = 24
         self.h = 40
-        self.WALK_SPEED = 8
+        self.WALK_SPEED = 150
         self.JUMP_FORCE = -18
         self.DAMPING_STOP = 0.8
         self.DAMPING_TURNING = 0.6
@@ -157,7 +157,7 @@ class Player:
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 dx += 1
         
-        self.vx = dx * self.WALK_SPEED
+        self.vx = dx * self.WALK_SPEED * dt
         """if dx == 0:
             self.vx *= (1-DAMPING_STOP)**(dt*10)
         elif self.vx/dx < 0:
