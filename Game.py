@@ -25,8 +25,12 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         #screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        pygame.display.set_caption("Beste spillet")
+        pygame.display.set_caption("EasyGame")
         self.clock = pygame.time.Clock()
+        
+        pygame.mixer.init() 
+        pygame.mixer.music.load("sounds/music.mp3") 
+        pygame.mixer.music.play(-1,0.0)
 
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 40)
@@ -106,7 +110,7 @@ class Game:
     def run(self):
         running = True
         while running:
-            dt = self.clock.tick(100) / 1000
+            dt = self.clock.tick(60) / 1000
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
