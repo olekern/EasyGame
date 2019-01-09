@@ -47,9 +47,24 @@ class Button:
 
     def draw(self, screen):
         pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
-        text = self.game.font.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
+
+        pygame.font.init()
+        font15 = pygame.font.SysFont('Arial', 15)
+        font25 = pygame.font.SysFont('Arial', 25)
+
+        text = font25.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
         textWidth = text.get_rect().width
-        screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + 7))
+        textHeight = text.get_rect().height
+        screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + (self.height-textHeight*2)))
+        record = ""
+        print(self.game.records[self.levelIndex])
+        if (self.game.records[self.levelIndex] != 0.0):
+            record = str(self.game.records[self.levelIndex])
+        
+        text1 = font15.render('Rekord: ' + record, False, (255, 255, 255))
+        textWidth1 = text1.get_rect().width
+        textHeight1 = text1.get_rect().height
+        screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*2) + 10)))
 
     def collide(self, mouse):
         x_pos = mouse[0]
