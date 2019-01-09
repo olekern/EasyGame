@@ -67,6 +67,28 @@ class MapLoader:
                     tiles.append(row)
                 break
         return tiles
+    
+    def getPlayerSpawn(self):
+        layers = self.data["layers"]
+        for layer in layers:
+            if layer["name"] == "Objects":
+                for obj in layer["objects"]:
+                    if obj["name"] == "spawn":
+                        return [float(obj["x"]), float(obj["y"])]
+        return [0.0, 0.0]
+    
+    def getGoalRect(self):
+        layers = self.data["layers"]
+        for layer in layers:
+            if layer["name"] == "Objects":
+                for obj in layer["objects"]:
+                    if obj["name"] == "goal":
+                        x = int(obj["x"])
+                        y = int(obj["y"])
+                        width = int(obj["width"])
+                        height = int(obj["height"])
+                        return Rect(x, y, width, height)
+        return Rect(100, 100, 300, 300)
 
 class Tile:
     def __init__(self, game, id, image):
@@ -86,8 +108,8 @@ class Player:
         self.y = y
         self.w = 24
         self.h = 40
-        self.WALK_SPEED = 10
-        self.JUMP_FORCE = -15
+        self.WALK_SPEED = 150
+        self.JUMP_FORCE = -18
         self.DAMPING_STOP = 0.8
         self.DAMPING_TURNING = 0.6
         self.DAMPING_RUNNING = 0.4
@@ -129,12 +151,13 @@ class Player:
 
         keys = pygame.key.get_pressed()
         dx = 0
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            dx -= 1
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            dx += 1
+        if not self.level.finished:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                dx -= 1
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                dx += 1
         
-        self.vx = dx * self.WALK_SPEED
+        self.vx = dx * self.WALK_SPEED * dt
         """if dx == 0:
             self.vx *= (1-DAMPING_STOP)**(dt*10)
         elif self.vx/dx < 0:
@@ -151,8 +174,11 @@ class Player:
             self.timeInAir += dt
         
 
-        if keys[pygame.K_SPACE] and self.timeInAir < 0.03:
-            self.vy = self.JUMP_FORCE
+        if not self.level.finished:
+            if keys[pygame.K_SPACE] and self.timeInAir < 0.03:
+                self.vy = self.JUMP_FORCE
+        elif keys[pygame.K_SPACE]:
+            self.level.restart()
         
         for event in events:
             if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
@@ -175,10 +201,10 @@ class Player:
             self.x = len(self.level.tiles[0])*self.level.game.TILE_SIZE - self.w
         
         if self.y>len(self.level.tiles)*self.level.game.TILE_SIZE:
-            self.x = self.startX
-            self.y = self.startY
-            self.vx = 0
-            self.vy = 0
+            self.level.restart()
+        
+        if not self.level.finished and (self.level.goalRect.collidepoint(self.x+self.w, self.y) or self.level.goalRect.collidepoint(self.x+self.w, self.y) or self.level.goalRect.collidepoint(self.x+self.w, self.y+self.h) or self.level.goalRect.collidepoint(self.x, self.y+self.h)):
+            self.level.complete()
 
     def checkCollisions(self, tiles):
         self.grounded = False
@@ -332,31 +358,27 @@ class Game:
 
         self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_23, self.DECORATION_GOAL_31]
         self.isPlaying = False
-        self.level = Level(self, "maps/Map1.json")
         self.menu = Menu(self)
 
-    def loadLevel(self, levelPath):
-        self.level = Level(self, levelPath)
+    def loadLevel(self, levelPath, levelIndex):
+        self.level = Level(self, levelPath, levelIndex)
         self.isPlaying = True
     
-    def updateRecord(self, levelIndex, record):
-        self.records[levelIndex] = record
+    def saveRecords(self):
         if(os.path.isfile("records.txt")):
             print("Records file exists")
             outfile = open("records.txt", "r")
             content = []
             for record in self.records:
-                content.append(str(record)+str("\n"))
+                content.append("%.2f" % record + "\n")
             
             with open('records.txt', 'w') as file:
                 file.writelines(content)
         else:
             print("Records file does not exist")
             outfile = open("records.txt", "w")
-            for i in range(self.LEVEL_COUNT):
-                if(i == levelIndex):
-                    outfile.write(str(levelIndex) + " " +str(record))
-                outfile.write("\n")
+            for record in self.records:
+                outfile.write("%.2f" % record + "\n")
         outfile.close()
         
     def loadRecords(self):
@@ -387,7 +409,10 @@ class Game:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        running = False
+                        if self.isPlaying:
+                            self.isPlaying = False
+                        else:
+                            running = False
 
             if self.isPlaying:
                 self.level.update(self.screen, events, dt)
@@ -402,26 +427,53 @@ class Game:
 
 
 class Level:
-    def __init__(self, game, mapRef):
+    def __init__(self, game, mapRef, levelIndex):
         self.game = game
         self.mapRef = mapRef
-        self.player = Player(self, game.TILE_SIZE*2, 0)
-        self.camera = Camera(self.player)
-        self.sun = pygame.image.load("res/sun.png").convert_alpha()
-        self.map1 = MapLoader(mapRef)
-        self.tiles = self.map1.getTiles("Ground")
-        self.decorations = self.map1.getTiles("Decoration")
+        self.levelIndex = levelIndex
+        self.map = MapLoader(mapRef)
+        self.tiles = self.map.getTiles("Ground")
+        self.decorations = self.map.getTiles("Decoration")
         self.GRAVITY = 80
 
+        playerSpawn = self.map.getPlayerSpawn()
+        self.goalRect = self.map.getGoalRect()
+
+        self.player = Player(self, playerSpawn[0], playerSpawn[1])
+        self.camera = Camera(self.player)
+        self.sun = pygame.image.load("res/sun.png").convert_alpha()
         cloudImg = pygame.image.load("res/cloud.png").convert_alpha()
         self.clouds = []
+        self.finished = False
+        self.newRecord = False
+        self.time = 0.0
         for i in range(5):
             x = random.randint(0, self.game.SCREEN_WIDTH)
             y = random.randint(0, self.game.SCREEN_HEIGHT/3)
             speed = random.randint(10, 50)
             self.clouds.append(Cloud(self, x, y, cloudImg, speed))
     
+    def complete(self):
+        if not self.finished:
+            self.finished = True
+            self.newRecord = self.game.records[self.levelIndex] == 0.0 or self.game.records[self.levelIndex] > self.time
+            if self.newRecord:
+                self.game.records[self.levelIndex] = self.time
+                self.game.saveRecords()
+                
+    def restart(self):
+        self.player.x = self.player.startX
+        self.player.y = self.player.startY
+        self.player.vx = 0
+        self.player.vy = 0
+        self.time = 0
+        self.finished = False
+        self.newRecord = False
+            
     def update(self, screen, events, dt):
+        if not self.finished:
+            self.time += dt
+        
         self.player.update(dt, events)
         self.player.checkCollisions(self.tiles)
         self.player.lateUpdate()
@@ -456,15 +508,24 @@ class Level:
 
         self.player.draw(screen)
 
-        time = pygame.time.get_ticks() / 1000
-        text = self.game.font.render('Tid: ' + str(time), True, (255, 255, 255))
+        text = self.game.font.render('Tid: ' + "%.2f" % self.time, True, (255, 255, 255))
         screen.blit(text, (10, 10))
 
         text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
         screen.blit(text, (10, 50))
 
-    
+        if self.finished:
+            if self.newRecord:
+                text = self.game.font.render('Ny rekord!', True, (255, 255, 255))
+                screen.blit(text, (300, 200))
+            else:
+                text = self.game.font.render('Din gamle rekord var på: ' + "%.2f" % self.game.records[self.levelIndex] , True, (255, 255, 255))
+                screen.blit(text, (200, 200))
+            text = self.game.font.render("Trykk på 'escape' for å gå tilbake eller 'space' for å restarte", True, (255, 255, 255))
+            screen.blit(text, (5, 300))
 
+
+    
 
 game = Game()
 game.run()

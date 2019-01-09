@@ -35,7 +35,7 @@ class Menu:
             self.buttons[i].draw(screen)
 
 class Button:
-    def __init__(self, menu, game, x, y, levelPath, i):
+    def __init__(self, menu, game, x, y, levelPath, levelIndex):
         self.menu = menu
         self.game = game
         self.x = x
@@ -43,12 +43,11 @@ class Button:
         self.width = 150
         self.height = 65
         self.levelPath = levelPath
-        self.i = i+1
+        self.levelIndex = levelIndex
 
     def draw(self, screen):
         pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
-        print(self.i)
-        text = self.game.font.render('Level ' + str(self.i), False, (255, 255, 255))
+        text = self.game.font.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
         textWidth = text.get_rect().width
         screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + 7))
 
@@ -57,6 +56,7 @@ class Button:
         y_pos = mouse[1]
 
         if (x_pos >= self.x and x_pos <= self.x + self.width) and (y_pos >= self.y and y_pos <= self.y + self.height):
-            self.menu.game.loadLevel(self.levelPath)
+            #Button is clicked
+            self.menu.game.loadLevel(self.levelPath, self.levelIndex)
 
     
