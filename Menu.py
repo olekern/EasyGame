@@ -55,7 +55,7 @@ class Button:
         text = font30.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
         textWidth = text.get_rect().width
         textHeight = text.get_rect().height
-        screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + (self.height-textHeight*2)))
+        screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + (self.height-textHeight*1.7)))
         record = ""
         if (self.game.records[self.levelIndex] != 0.0):
             record = str(self.game.records[self.levelIndex])
@@ -63,7 +63,7 @@ class Button:
         text1 = font20.render('Rekord: ' + record, False, (255, 255, 255))
         textWidth1 = text1.get_rect().width
         textHeight1 = text1.get_rect().height
-        screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*2) + 10)))
+        screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*1.4))))
 
     def collide(self, mouse):
         x_pos = mouse[0]

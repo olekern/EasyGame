@@ -424,6 +424,23 @@ class Game:
 
         pygame.quit()
 
+<<<<<<< HEAD
+=======
+    def getTile(self, x, y, group):
+        if y < 0 or x < 0:
+            return
+        if y >= len(group) or x >= len(group[y]):
+            return
+        return group[y][x]
+
+    def getTileWithId(self, id, group):
+        for tile in group:
+            if tile.id == id:
+                return tile
+        if id == 0:
+            return None
+
+>>>>>>> d4892a057f311a139b55171648f19f17944d8a33
 
 
 class Level:
