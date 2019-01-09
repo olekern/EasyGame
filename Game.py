@@ -108,8 +108,8 @@ class Player:
         self.y = y
         self.w = 24
         self.h = 40
-        self.WALK_SPEED = 150
-        self.JUMP_FORCE = -18
+        self.WALK_SPEED = 440
+        self.JUMP_FORCE = -16
         self.DAMPING_STOP = 0.8
         self.DAMPING_TURNING = 0.6
         self.DAMPING_RUNNING = 0.4
