@@ -1,7 +1,12 @@
 import pygame
+from pygame.locals import *
+
 from SpriteSheet import SpriteSheet
 
+# Spilleren på spillet
 class Player:
+
+    # Initialiserer alle bildene av spilleren og andre verdier
     def __init__(self, level, x, y):
         self.level = level
         self.startX = x
@@ -39,7 +44,10 @@ class Player:
         self.spriteIndex = 0
         self.timeInAir = 0.0
 
+    #Oppdaterer hvert bilde
     def update(self, dt, events):
+
+        #Bestemmer hvilket bilde i animasjonen som skal spilles
         self.prevY = self.y
         self.spriteTime += dt
         if self.spriteTime > self.spriteDT:
@@ -48,6 +56,7 @@ class Player:
             if self.spriteIndex >= len(self.idle_sprites_right):
                 self.spriteIndex = 0
 
+        # Dersom man trykker på piltastene eller A/D lagrer den hvor spilleren skal flytte seg
         keys = pygame.key.get_pressed()
         dx = 0
         if not self.level.finished:
@@ -55,17 +64,20 @@ class Player:
                 dx -= 1
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 dx += 1
-        
         self.vx = dx * self.WALK_SPEED * dt
         
+
         if abs(self.vx) < 0.1:
             self.vx = 0
 
+
+        # Legger til tyngdekraften i farten til spilleren
         self.vy += self.level.GRAVITY * dt
         if not self.grounded:
             self.timeInAir += dt
         
 
+        # Sjekker om man kan hoppe
         if not self.level.finished:
             if keys[pygame.K_SPACE] and self.timeInAir < 0.03:
                 self.vy = self.JUMP_FORCE
@@ -78,29 +90,13 @@ class Player:
                 if self.vy < 0:
                     self.vy /= 2
 
-    
-    def lateUpdate(self):
-        self.x += self.vx
-        self.y += self.vy
-        
-        if self.vx < 0:
-            self.facingRight = False
-        if self.vx > 0:
-            self.facingRight = True
 
-        if self.x < 0:
-            self.x = 0
-        if self.x > len(self.level.tiles[0])*self.level.game.TILE_SIZE - self.w:
-            self.x = len(self.level.tiles[0])*self.level.game.TILE_SIZE - self.w
-        
-        if self.y>len(self.level.tiles)*self.level.game.TILE_SIZE:
-            self.level.restart()
-        
-        if not self.level.finished and (self.level.goalRect.collidepoint(self.x+self.w, self.y) or self.level.goalRect.collidepoint(self.x+self.w, self.y) or self.level.goalRect.collidepoint(self.x+self.w, self.y+self.h) or self.level.goalRect.collidepoint(self.x, self.y+self.h)):
-            self.level.complete()
 
+    # Sjekker for kollisjon med der spilleren ønsker å flytte seg til og bakken
     def checkCollisions(self, tiles):
         self.grounded = False
+
+        # Sjekker under spilleren dersom han/hun beveger seg nedover
         if self.vy > 0:
             yCheck = self.y + self.h + self.vy
             xCheck1 = self.x
@@ -112,7 +108,7 @@ class Player:
                 self.grounded = True
                 self.vy = 0
                 self.y = int(yCheck / self.level.game.TILE_SIZE)*self.level.game.TILE_SIZE - self.h
-        elif self.vy < 0:
+        elif self.vy < 0: # Sjekker under spilleren dersom han/hun beveger seg oppover
             yCheck = self.y + self.vy
             xCheck1 = self.x
             xCheck2 = self.x + self.w - 1
@@ -122,6 +118,7 @@ class Player:
                 self.vy = 0
                 self.y = int(yCheck / self.level.game.TILE_SIZE + 1)*self.level.game.TILE_SIZE
         
+        # Sjekker til siden av spilleren dersom han/hun beveger seg til høyre
         if self.vx > 0:
             xCheck = self.x + self.w + self.vx
             yCheck1 = self.y
@@ -131,7 +128,7 @@ class Player:
             if (tile1 is not 0 and tile1 is not None) or (tile2 is not 0 and tile2 is not None):
                 self.vx = 0
                 self.x = int(xCheck / self.level.game.TILE_SIZE)*self.level.game.TILE_SIZE - self.w
-        elif self.vx < 0:
+        elif self.vx < 0: # Sjekker til siden av spilleren dersom han/hun beveger seg til venstre
             xCheck = self.x + self.vx
             yCheck1 = self.y
             yCheck2 = self.y + self.h - 1
@@ -141,8 +138,31 @@ class Player:
                 self.vx = 0
                 self.x = int(xCheck / self.level.game.TILE_SIZE + 1)*self.level.game.TILE_SIZE
         
+    # Etter at det har blitt sjekket for kollisjon flytter spilleren på seg så lenge den ikke treffer på noe
+    def lateUpdate(self):
+        self.x += self.vx
+        self.y += self.vy
+        
+        if self.vx < 0:
+            self.facingRight = False
+        if self.vx > 0:
+            self.facingRight = True
 
+        # Begrenser spilleren til å være innenfor banen
+        if self.x < 0:
+            self.x = 0
+        if self.x > len(self.level.tiles[0])*self.level.game.TILE_SIZE - self.w:
+            self.x = len(self.level.tiles[0])*self.level.game.TILE_SIZE - self.w
+        
+        # Starter på nytt dersom spilleren er under banen
+        if self.y>len(self.level.tiles)*self.level.game.TILE_SIZE:
+            self.level.restart()
+        
+        # Sjekker om man er i mål
+        if self.level.goalRect.colliderect(Rect(self.x, self.y, self.w, self.h)):
+            self.level.complete()
  
+    # Tegner spilleren med den riktige animasjonen
     def draw(self, screen):
         if self.prevY != self.y:
             index = 1

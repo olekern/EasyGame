@@ -11,7 +11,9 @@ import os.path
   
 
 class Game:
+    #Initialiserer spillet
     def __init__(self):
+        # Setter noen standard-variabler
         self.TILE_SIZE = 32
         self.GREEN = (0, 255, 0)
         self.BLUE = (0, 0, 255)
@@ -19,15 +21,18 @@ class Game:
         self.SCREEN_WIDTH = 800
         self.SCREEN_HEIGHT = 600
         self.LEVEL_COUNT = 4
+
+        # Laster inn rekordene fra filen
         self.records = []
         self.loadRecords()
 
+        # Initialiserer pygame
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        #screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("EasyGame")
         self.clock = pygame.time.Clock()
         
+        # Initialiserer musikken
         pygame.mixer.init() 
         pygame.mixer.music.load("sounds/music.mp3") 
         pygame.mixer.music.play(-1,0.0)
@@ -35,8 +40,8 @@ class Game:
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 40)
 
+        # Laster inn alle sprites (bilder)
         spriteSheet = SpriteSheet("res/sprites.png", self.TILE_SIZE, self.TILE_SIZE)
-
         self.TILE_GRASS_TOP = Tile(self, 2, spriteSheet.getImageAt(1, 0))
         self.TILE_GRASS_TOP_LEFT = Tile(self, 1, spriteSheet.getImageAt(0, 0))
         self.TILE_GRASS_TOP_RIGHT = Tile(self, 3, spriteSheet.getImageAt(2, 0))
@@ -62,16 +67,18 @@ class Game:
         self.DECORATION_SIGN_22 = Tile(self, 22, spriteSheet.getImageAt(5, 2))
         self.DECORATION_GOAL_23 = Tile(self, 23, spriteSheet.getImageAt(6, 2))
         self.DECORATION_GOAL_31 = Tile(self, 31, spriteSheet.getImageAt(6, 3))
-
-
         self.ALL_DECORATIONS = [self.DECORATION_GRASS, self.DECORATION_SIGN_5, self.DECORATION_SIGN_6, self.DECORATION_SIGN_7, self.DECORATION_SIGN_8, self.DECORATION_SIGN_13, self.DECORATION_SIGN_14, self.DECORATION_SIGN_15, self.DECORATION_SIGN_16, self.DECORATION_SIGN_21, self.DECORATION_SIGN_22, self.DECORATION_GOAL_23, self.DECORATION_GOAL_31]
+       
+        # Laster inn menyen
         self.isPlaying = False
         self.menu = Menu(self)
 
+    # Funksjonen for å laste inn et level og starte det
     def loadLevel(self, levelPath, levelIndex):
         self.level = Level(self, levelPath, levelIndex)
         self.isPlaying = True
     
+    # Lagrer rekordene
     def saveRecords(self):
         if(os.path.isfile("records.txt")):
             print("Records file exists")
@@ -88,7 +95,8 @@ class Game:
             for record in self.records:
                 outfile.write("%.2f" % record + "\n")
         outfile.close()
-        
+    
+    # Laster inn rekordene
     def loadRecords(self):
         if os.path.isfile("records.txt"):
             outfile = open("records.txt","r")
@@ -107,9 +115,13 @@ class Game:
             for i in range(self.LEVEL_COUNT):
                 self.records.append(0)
 
+
+    # Starter spillet
     def run(self):
         running = True
+        # Kjører til man lukker
         while running:
+            # Begrenser til 60 bilder i sekundet
             dt = self.clock.tick(60) / 1000
             events = pygame.event.get()
             for event in events:
@@ -122,9 +134,10 @@ class Game:
                         else:
                             running = False
 
+            # Viser levelet hvis man er der
             if self.isPlaying:
                 self.level.update(self.screen, events, dt)
-            else:
+            else: # Hvis ikke vises menyen
                 self.menu.update(self.screen, events)
 
             pygame.display.flip()
@@ -132,6 +145,7 @@ class Game:
 
         pygame.quit()
 
+    # Returnerer tile som er korresponderende til en posisjon på kartet
     def getTile(self, x, y, group):
         if y < 0 or x < 0:
             return

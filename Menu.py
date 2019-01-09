@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 
+# Klassen som har ansvar for menyen i spillet
 class Menu:
     def __init__(self, game):
         self.game = game
@@ -13,6 +14,7 @@ class Menu:
             button = Button(self, game, x_pos, game.SCREEN_HEIGHT/2, levelPaths[i], i)
             self.buttons.append(button)
 
+    # Tegner alt på skjermen hvert frame og sjekker om man trykker på en av knappene
     def update(self, screen, events):
         for event in events:
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -34,6 +36,7 @@ class Menu:
         for i in range(self.game.LEVEL_COUNT):
             self.buttons[i].draw(screen)
 
+# Klasse for hver av knappene i menyen
 class Button:
     def __init__(self, menu, game, x, y, levelPath, levelIndex):
         self.menu = menu
@@ -45,6 +48,7 @@ class Button:
         self.levelPath = levelPath
         self.levelIndex = levelIndex
 
+    #Tegner knappen med både bakgrunnen, hvilket nivå den er til, og rekorden på det nivået
     def draw(self, screen):
         pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
 
@@ -65,12 +69,12 @@ class Button:
         textHeight1 = text1.get_rect().height
         screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*1.4))))
 
+    # Sjekker om musen trykker på knappen og laster i såfall inn levelet
     def collide(self, mouse):
         x_pos = mouse[0]
         y_pos = mouse[1]
 
         if (x_pos >= self.x and x_pos <= self.x + self.width) and (y_pos >= self.y and y_pos <= self.y + self.height):
-            #Button is clicked
             self.menu.game.loadLevel(self.levelPath, self.levelIndex)
 
     

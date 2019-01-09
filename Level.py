@@ -6,7 +6,10 @@ from Camera import Camera
 from Cloud import Cloud
 from MapLoader import MapLoader
 
+# Level er klassen som har informasjon om hvert level i spillet
 class Level:
+
+    # Initialiserer og laster inn levelet
     def __init__(self, game, mapRef, levelIndex):
         self.game = game
         self.mapRef = mapRef
@@ -33,6 +36,7 @@ class Level:
             speed = random.randint(10, 50)
             self.clouds.append(Cloud(self, x, y, cloudImg, speed))
     
+    # Denne kalles når spilleren er i mål. Sjekker om det er ny rekord og lagrer det i såfall
     def complete(self):
         if not self.finished:
             self.finished = True
@@ -40,7 +44,8 @@ class Level:
             if self.newRecord:
                 self.game.records[self.levelIndex] = self.time
                 self.game.saveRecords()
-                
+    
+    # Starten levelet på nytt dersom denne blir kjørt
     def restart(self):
         self.player.x = self.player.startX
         self.player.y = self.player.startY
@@ -49,24 +54,31 @@ class Level:
         self.time = 0
         self.finished = False
         self.newRecord = False
-            
+    
+    # Oppdaterer alle objektene i levelet og tegner de til skjermen
     def update(self, screen, events, dt):
+        # Legger til på tiden spilleren har brukt
         if not self.finished:
             self.time += dt
         
+        # Oppdaterer spilleren
         self.player.update(dt, events)
         self.player.checkCollisions(self.tiles)
         self.player.lateUpdate()
 
+        # Oppdaterer kameraet
         self.camera.update()
 
+        # Tegner bakgrunnen og solen
         screen.fill((95, 187, 210))
         screen.blit(self.sun, (self.game.SCREEN_WIDTH-600, 0))
 
+        # Tegner skyene
         for cloud in self.clouds:
             cloud.update(dt)
             cloud.draw(screen)
         
+        # Tegner alle Tiles som er synlige i kameraet
         minY = int((self.camera.y) / self.game.TILE_SIZE)
         maxY = int((self.camera.y + self.game.SCREEN_HEIGHT) / self.game.TILE_SIZE) + 1
         minX = int((self.camera.x) / self.game.TILE_SIZE)
@@ -85,15 +97,18 @@ class Level:
                         decor.draw(screen, x, y)
 
         
-
+        # Tegner spilleren
         self.player.draw(screen)
 
+        # Tegner tiden
         text = self.game.font.render('Tid: ' + "%.2f" % self.time, True, (255, 255, 255))
         screen.blit(text, (10, 10))
 
-        text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
-        screen.blit(text, (10, 50))
+        # Tegner DT (tiden mellom hvert bilde, som er nyttig under utvikling)
+        """text = self.game.font.render('DT: '+ str(dt), True, (255, 255, 255))
+        screen.blit(text, (10, 50))"""
 
+        # Tegner teksten over skjemen når spilleren er i mål
         if self.finished:
             if self.newRecord:
                 text = self.game.font.render('Ny rekord!', True, (255, 255, 255))
