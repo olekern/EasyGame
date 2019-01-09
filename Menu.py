@@ -57,7 +57,6 @@ class Button:
         textHeight = text.get_rect().height
         screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + (self.height-textHeight*2)))
         record = ""
-        print(self.game.records[self.levelIndex])
         if (self.game.records[self.levelIndex] != 0.0):
             record = str(self.game.records[self.levelIndex])
         
