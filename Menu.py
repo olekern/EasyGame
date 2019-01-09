@@ -46,7 +46,10 @@ class Button:
         self.levelIndex = levelIndex
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
+        pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
+        text = self.game.font.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
+        textWidth = text.get_rect().width
+        screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + 7))
 
     def collide(self, mouse):
         x_pos = mouse[0]
