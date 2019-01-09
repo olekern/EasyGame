@@ -110,7 +110,7 @@ class Game:
     def run(self):
         running = True
         while running:
-            dt = self.clock.tick(100) / 1000
+            dt = self.clock.tick(60) / 1000
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
