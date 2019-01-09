@@ -12,13 +12,13 @@ class MapLoader:
         layers = self.data["layers"]
         for layer in layers:
             if layer["name"] == layerName:
-                width = int(layer["width"])
+                self.width = int(layer["width"])
                 tileData = layer["data"]
-                numRows = len(tileData)//width
+                numRows = len(tileData)//self.width
                 for r in range(numRows):
                     row = []
-                    for c in range(width):
-                        row.append(tileData[r*width + c])
+                    for c in range(self.width):
+                        row.append(tileData[r*self.width + c])
                     tiles.append(row)
                 break
         return tiles

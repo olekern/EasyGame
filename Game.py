@@ -143,7 +143,9 @@ class Game:
         for tile in group:
             if tile.id == id:
                 return tile
-        return
+        if id == 0:
+            return None
+
 
     
 # Starter spillet

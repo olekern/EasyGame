@@ -69,6 +69,7 @@ class Player:
         if not self.level.finished:
             if keys[pygame.K_SPACE] and self.timeInAir < 0.03:
                 self.vy = self.JUMP_FORCE
+
         elif keys[pygame.K_SPACE]:
             self.level.restart()
         
