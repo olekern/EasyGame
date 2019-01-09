@@ -31,6 +31,7 @@ class Game:
         pygame.mixer.init() 
         pygame.mixer.music.load("sounds/music.mp3") 
         pygame.mixer.music.play(-1,0.0)
+        
 
         pygame.font.init()
         self.font = pygame.font.SysFont('Arial', 40)
