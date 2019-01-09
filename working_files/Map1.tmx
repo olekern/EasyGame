@@ -5,7 +5,7 @@
   <object id="7" name="spawn" x="47.005" y="147.149">
    <point/>
   </object>
-  <object id="9" name="goal" x="1408" y="97" width="156" height="93"/>
+  <object id="9" name="goal" x="1408" y="131.364" width="32.2887" height="58.6357"/>
  </objectgroup>
  <layer id="11" name="Decoration" width="50" height="10">
   <data encoding="csv">

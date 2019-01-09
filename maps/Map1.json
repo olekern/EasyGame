@@ -19,15 +19,15 @@
                  "y":147.148707620007
                 }, 
                 {
-                 "height":93,
+                 "height":58.6357388316151,
                  "id":9,
                  "name":"goal",
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":156,
+                 "width":32.2886597938145,
                  "x":1408,
-                 "y":97
+                 "y":131.364261168385
                 }],
          "opacity":1,
          "type":"objectgroup",
