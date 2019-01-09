@@ -49,10 +49,10 @@ class Button:
         pygame.draw.rect(screen, (254, 198, 1), (self.x, self.y, self.game.SCREEN_WIDTH/6, 65)) 
 
         pygame.font.init()
-        font15 = pygame.font.SysFont('Arial', 15)
-        font25 = pygame.font.SysFont('Arial', 25)
+        font20 = pygame.font.SysFont('Arial', 20)
+        font30 = pygame.font.SysFont('Arial', 30)
 
-        text = font25.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
+        text = font30.render('Level ' + str(self.levelIndex+1), False, (255, 255, 255))
         textWidth = text.get_rect().width
         textHeight = text.get_rect().height
         screen.blit(text, (self.x + (self.width-textWidth)/3, self.y + (self.height-textHeight*2)))
@@ -60,7 +60,7 @@ class Button:
         if (self.game.records[self.levelIndex] != 0.0):
             record = str(self.game.records[self.levelIndex])
         
-        text1 = font15.render('Rekord: ' + record, False, (255, 255, 255))
+        text1 = font20.render('Rekord: ' + record, False, (255, 255, 255))
         textWidth1 = text1.get_rect().width
         textHeight1 = text1.get_rect().height
         screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*2) + 10)))
