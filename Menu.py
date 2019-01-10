@@ -64,7 +64,7 @@ class Button:
         if (self.game.records[self.levelIndex] != 0.0):
             record = str(self.game.records[self.levelIndex])
         
-        text1 = font20.render('Rekord: ' + record, False, (255, 255, 255))
+        text1 = font20.render("Rekord: " + record, False, (255, 255, 255))
         textWidth1 = text1.get_rect().width
         textHeight1 = text1.get_rect().height
         screen.blit(text1, (self.x + (self.width-textWidth1)/3, self.y + (self.height-(textHeight1*1.4))))

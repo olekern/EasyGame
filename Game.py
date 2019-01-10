@@ -161,7 +161,7 @@ class Game:
             return None
 
 
-    
+
 # Starter spillet
 game = Game()
 game.run()
